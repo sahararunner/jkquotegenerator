@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy JAR app to Azure Web App - JKQuoteEstimator
+name: Build and deploy Node.js app to Azure Web App - JKQuoteEstimator
 
 on:
   push:
@@ -16,19 +16,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Java version
-        uses: actions/setup-java@v1
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
         with:
-          java-version: '17'
+          node-version: '20.x'
 
-      - name: Build with Maven
-        run: mvn clean install
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm run test --if-present
+
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: java-app
-          path: '${{ github.workspace }}/target/*.jar'
+          name: node-app
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -38,25 +44,28 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
-  
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
-          name: java-app
+          name: node-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
       
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_9722920DC7B04D91A84CD0906CE93113 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_747815BED4DE4933B7C2D5C3244DB311 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_27FE1789E6054629A9869A502247B1C6 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5B4D4279A4DC4B68B58EC6E36A5BB96F }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1466AB35530D48BAB5765591B23DD0FD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_50D3AB80F39B4341A62010E83F9074AF }}
 
-      - name: Deploy to Azure Web App
+      - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'JKQuoteEstimator'
           slot-name: 'Production'
-          package: '*.jar'
+          package: .
           
