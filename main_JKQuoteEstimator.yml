@@ -1,0 +1,30 @@
+name: Deploy to Azure Web App
+
+on:
+  push:
+    branches:
+      - main  # Adjust branch name if needed
+
+jobs:
+  build-and-deploy:
+  runs-on: ubuntu-latest
+
+  steps:
+  - uses: actions/checkout@v2
+
+  - name: Set up Azure CLI
+    uses: azure/CLI@v1
+    with:
+      azcliversion: 2.0.72
+
+  - name: Azure Login
+    uses: azure/login@v1
+    with:
+      creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  - name: Deploy to Azure Web App
+    uses: azure/webapps-deploy@v2
+    with:
+      app-name: 'JKQuoteEstimator'
+      slot-name: 'production'  # Optional: Specify deployment slot
+      publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
