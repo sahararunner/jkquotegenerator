@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote Generator</title>
+    <title>Quote Estimator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
@@ -79,6 +79,9 @@
             background-color: #343a40;
             color: #fff;
         }
+        th.unit-service-fee {
+            width: 150px; /* Adjust width as needed */
+        }
         .quantity-control {
             display: flex;
             align-items: center;
@@ -96,7 +99,7 @@
             cursor: pointer;
             color: red;
         }
-        #totalPrice {
+        #totalPrice, #totalPriceAfterTax {
             margin-top: 10px;
             font-weight: bold;
             font-size: 18px;
@@ -154,7 +157,7 @@
     </style>
 </head>
 <body>
-    <h1>Quote Generator</h1>
+    <h1>Quote Estimator</h1>
     <label for="searchInput">Search product:</label>
     <div class="autocomplete">
         <input type="text" id="searchInput" placeholder="Search by Item Code or Keyword">
@@ -186,7 +189,7 @@
             <thead>
                 <tr>
                     <th>Service</th>
-                    <th>Unit Service Fee</th>
+                    <th class="unit-service-fee">Unit Service Fee</th>
                     <th>Total Service Fee</th>
                     <th>Actions</th>
                 </tr>
@@ -200,20 +203,21 @@
                 </tr>
                 <tr data-service="shipping">
                     <td>Shipping</td>
-                    <td>Varies by Product Weight/Volume</td>
+                    <td>Estimated flat fee $200 for local shipping (may vary based on distance & volume); please contact our representatives for alternative shipping methods (long distance, Fedex, etc.)</td>
                     <td>$0.00</td>
-                    <td><input type="checkbox" class="service-checkbox" data-service="shipping"><span class="service-explanation">Opt-out Shipping</span></td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="shipping"><span class="service-explanation">Self Pick-Up</span></td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <div id="totalPrice">Order Price: $0.00</div>
+    <div id="totalPrice">Subtotal: $0.00</div>
+    <div id="totalPriceAfterTax">Subtotal after tax (8.25%): $0.00</div>
 
     <div class="actions">
         <button id="checkout">Checkout</button>
         <span class="or">or</span>
-        <button id="contact">Contact Us for Plan/Quote Review</button>
+        <button id="contact">Forward Quote to Our Representatives</button>
     </div>
 
     <script>
@@ -257,7 +261,7 @@
                 const dropdown = $('#autocompleteDropdown');
                 dropdown.empty();
                 suggestions.forEach(product => {
-                    dropdown.append(`<div class="autocomplete-item" data-item-code="${product['Item Code']}" data-color="${product['Color']}" data-description="${product['Description']}" data-msrp="${product['Msrp']}">${product['Item Code']} - ${product['Color']} - ${product['Description']}</div>`);
+                    dropdown.append(`<div class="autocomplete-item" data-item-code="${product['Item Code']}" data-color="${product['Color']}" data-description="${product['Description']}" data-unit-price="${product['Unit Price']}">${product['Item Code']} - ${product['Color']} - ${product['Description']}</div>`);
                 });
 
                 if (input.length > 0 && suggestions.length > 0) {
@@ -272,7 +276,7 @@
                 const selectedCode = $(this).attr('data-item-code');
                 const selectedColor = $(this).attr('data-color');
                 const selectedDescription = $(this).attr('data-description');
-                const selectedMsrp = parseFloat($(this).attr('data-msrp'));
+                const selectedUnitPrice = parseFloat($(this).attr('data-unit-price'));
 
                 // Check if product is already selected
                 if (selectedProducts[selectedCode]) {
@@ -282,7 +286,7 @@
                         code: selectedCode,
                         color: selectedColor,
                         description: selectedDescription,
-                        msrp: selectedMsrp,
+                        unitPrice: selectedUnitPrice,
                         quantity: 1
                     };
                 }
@@ -300,17 +304,17 @@
                 const selectedProductsTableBody = $('#selectedProductsTable tbody');
                 selectedProductsTableBody.empty();
 
-                let totalMsrp = 0;
+                let totalUnitPrice = 0;
 
                 Object.values(selectedProducts).forEach(product => {
-                    const totalProductMsrp = product.msrp * product.quantity;
+                    const totalProductUnitPrice = product.unitPrice * product.quantity;
                     const productRow = $(`
                         <tr data-item-code="${product.code}">
                             <td>${product.code}</td>
                             <td>${product.color}</td>
                             <td>${product.description}</td>
-                            <td>$${product.msrp.toFixed(2)}</td>
-                            <td>$${totalProductMsrp.toFixed(2)}</td>
+                            <td>$${product.unitPrice.toFixed(2)}</td>
+                            <td>$${totalProductUnitPrice.toFixed(2)}</td>
                             <td>
                                 <div class="quantity-control">
                                     <button class="deduct-quantity">-</button>
@@ -324,11 +328,11 @@
 
                     selectedProductsTableBody.append(productRow);
 
-                    totalMsrp += totalProductMsrp;
+                    totalUnitPrice += totalProductUnitPrice;
                 });
 
                 updateTotalServiceFee();
-                updateTotalPrice(totalMsrp);
+                updateTotalPrice(totalUnitPrice);
             }
 
             // Handle quantity add
@@ -375,25 +379,21 @@
             // Update total service fee
             function updateTotalServiceFee() {
                 let totalAssemblyFee = 0;
-                let totalShippingFee = 0;
+                const flatShippingFee = 200;
 
                 Object.values(selectedProducts).forEach(product => {
-                    const canBeAssembled = parseInt(products.find(p => p['Item Code'] === product.code)['Can be assembled?']);
-                    const shippingFee = parseFloat(products.find(p => p['Item Code'] === product.code)['Shipping Fee']) || 0;
+                    const assembly = parseFloat(products.find(p => p['Item Code'] === product.code)['Assembly']);
 
-                    if (canBeAssembled === 1) {
-                        totalAssemblyFee += 20 * product.quantity;
-                    }
-                    totalShippingFee += shippingFee * product.quantity;
+                    totalAssemblyFee += assembly * 20 * product.quantity;
                 });
 
                 $('#recommendedServiceTable tbody tr[data-service="assembly"] td:eq(2)').text(`$${totalAssemblyFee.toFixed(2)}`);
-                $('#recommendedServiceTable tbody tr[data-service="shipping"] td:eq(2)').text(`$${totalShippingFee.toFixed(2)}`);
+                $('#recommendedServiceTable tbody tr[data-service="shipping"] td:eq(2)').text(`$${flatShippingFee.toFixed(2)}`);
             }
 
             // Update total price
-            function updateTotalPrice(totalMsrp) {
-                let totalPrice = totalMsrp || Object.values(selectedProducts).reduce((acc, product) => acc + (product.msrp * product.quantity), 0);
+            function updateTotalPrice(totalUnitPrice) {
+                let totalPrice = totalUnitPrice || Object.values(selectedProducts).reduce((acc, product) => acc + (product.unitPrice * product.quantity), 0);
 
                 $('#recommendedServiceTable tbody tr').each(function() {
                     const totalServiceFee = parseFloat($(this).find('td:eq(2)').text().replace('$', ''));
@@ -402,7 +402,8 @@
                     }
                 });
 
-                $('#totalPrice').text(`Order Price: $${totalPrice.toFixed(2)}`);
+                $('#totalPrice').text(`Subtotal: $${totalPrice.toFixed(2)}`);
+                $('#totalPriceAfterTax').text(`Subtotal after tax (8.25%): $${(totalPrice * 1.0825).toFixed(2)}`);
             }
         });
     </script>
