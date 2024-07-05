@@ -12,13 +12,20 @@
             background-color: #f8f9fa;
             margin: 0;
             padding: 20px;
+            font-size: 14px; /* Reduced font size for the entire page */
         }
         h1 {
             color: #333;
-            font-size: 24px;
+            font-size: 22px; /* Reduced font size for the title */
+        }
+        .gray-line {
+            color: gray;
+            font-size: 12px; /* Adjusted font size for the gray line text */
+            margin-top: -10px;
+            margin-bottom: 20px;
         }
         label {
-            font-size: 16px;
+            font-size: 14px; /* Adjusted font size for labels */
             color: #555;
         }
         .autocomplete {
@@ -32,7 +39,7 @@
             padding: 10px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 14px; /* Adjusted font size for input */
         }
         .autocomplete-items {
             position: absolute;
@@ -60,7 +67,7 @@
             padding-top: 10px;
         }
         h2 {
-            font-size: 18px;
+            font-size: 16px; /* Reduced font size for subheadings */
             text-decoration: underline;
         }
         table {
@@ -74,13 +81,16 @@
         th, td {
             padding: 10px;
             text-align: left;
+            font-size: 14px; /* Adjusted font size for table text */
+            height: 32px; /* Reduced height for table rows */
         }
         th {
             background-color: #343a40;
             color: #fff;
+            height: 32px; /* Reduced height for table header */
         }
         th.unit-service-fee {
-            width: 150px; /* Adjust width as needed */
+            width: 250px; /* Adjust width as needed */
         }
         .quantity-control {
             display: flex;
@@ -89,24 +99,25 @@
         .quantity-control button {
             padding: 5px;
             margin: 0 5px;
-            font-size: 16px;
+            font-size: 14px; /* Adjusted font size for buttons */
             cursor: pointer;
         }
         .delete-btn {
             padding: 5px;
             margin-left: 10px;
-            font-size: 16px;
+            font-size: 14px; /* Adjusted font size for delete button */
             cursor: pointer;
             color: red;
         }
         #totalPrice, #totalPriceAfterTax {
             margin-top: 10px;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px; /* Adjusted font size for total prices */
             color: #fff;
             background-color: #343a40;
             padding: 10px;
             border-radius: 4px;
+            height: 32px; /* Reduced height for total rows */
         }
         #excelFile {
             position: absolute;
@@ -115,7 +126,7 @@
             padding: 10px;
             border: 1px solid #ced4da;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 14px; /* Adjusted font size for file input */
         }
         .product-details {
             display: flex;
@@ -138,26 +149,33 @@
             color: white;
             margin-right: 10px;
         }
-        .actions .or {
-            font-size: 16px;
-            margin-right: 10px;
-        }
         .service-checkbox {
             margin-right: 5px;
         }
         .service-explanation {
             display: inline;
-            font-size: 14px;
+            font-size: 14px; /* Adjusted font size for service explanation */
             color: #555;
         }
         .crossed-out {
             text-decoration: line-through;
             color: red;
         }
+        #downloadExcel {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff; /* Blue background for the button */
+            color: white;
+        }
     </style>
 </head>
 <body>
     <h1>Quote Estimator</h1>
+    <div class="gray-line">The quote generated using this tool is provided for estimation purposes only. Actual pricing may vary based on a thorough review and recommendation by a J&K representative. For the most accurate quote tailored to your specific needs, we encourage you to consult with our team.</div>
     <label for="searchInput">Search product:</label>
     <div class="autocomplete">
         <input type="text" id="searchInput" placeholder="Search by Item Code or Keyword">
@@ -198,14 +216,38 @@
                 <tr data-service="assembly">
                     <td>Assembly</td>
                     <td>$20.00</td>
-                    <td>$0.00</td>
-                    <td><input type="checkbox" class="service-checkbox" data-service="assembly"><span class="service-explanation">Opt-out Assembly</span></td>
+                    <td class="crossed-out">$0.00</td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="assembly"><span class="service-explanation">Select Assembly</span></td>
                 </tr>
                 <tr data-service="shipping">
                     <td>Shipping</td>
-                    <td>Estimated flat fee $200 for local shipping (may vary based on distance & volume); please contact our representatives for alternative shipping methods (long distance, Fedex, etc.)</td>
-                    <td>$0.00</td>
-                    <td><input type="checkbox" class="service-checkbox" data-service="shipping"><span class="service-explanation">Self Pick-Up</span></td>
+                    <td>Estimated flat fee $200 for local delivery by J&K. Fee may vary by distance & volume. For all other shipping methods (3PL carrier, Fedex, etc.), please contact our representatives for more details.</td>
+                    <td class="crossed-out">$200.00</td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="shipping"><span class="service-explanation">Select Service</span></td>
+                </tr>
+                <tr data-service="bounce_check">
+                    <td>Bounce Check</td>
+                    <td>$35.00</td>
+                    <td class="crossed-out">$35.00</td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="bounce_check"><span class="service-explanation">Select Bounce Check</span></td>
+                </tr>
+                <tr data-service="design_bath">
+                    <td>Design (Bath)</td>
+                    <td>$150.00</td>
+                    <td class="crossed-out">$150.00</td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="design_bath"><span class="service-explanation">Select Design (Bath)</span></td>
+                </tr>
+                <tr data-service="design_kitchen">
+                    <td>Design (Kitchen)</td>
+                    <td>$250.00</td>
+                    <td class="crossed-out">$250.00</td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="design_kitchen"><span class="service-explanation">Select Design (Kitchen)</span></td>
+                </tr>
+                <tr data-service="modification">
+                    <td>Modification</td>
+                    <td>Estimated fee $75 (may vary by job complexity). Please contact our representatives for more details.</td>
+                    <td class="crossed-out">$75.00</td>
+                    <td><input type="checkbox" class="service-checkbox" data-service="modification"><span class="service-explanation">Select Modification</span></td>
                 </tr>
             </tbody>
         </table>
@@ -214,11 +256,7 @@
     <div id="totalPrice">Subtotal: $0.00</div>
     <div id="totalPriceAfterTax">Subtotal after tax (8.25%): $0.00</div>
 
-    <div class="actions">
-        <button id="checkout">Checkout</button>
-        <span class="or">or</span>
-        <button id="contact">Forward Quote to Our Representatives</button>
-    </div>
+    <button id="downloadExcel" class="actions" style="margin-top: 20px;">Download Quote as Excel</button>
 
     <script>
         $(document).ready(function() {
@@ -367,9 +405,9 @@
                 const serviceRow = $(`#recommendedServiceTable tbody tr[data-service="${service}"]`);
 
                 if (isChecked) {
-                    serviceRow.find('td:eq(2)').addClass('crossed-out');
-                } else {
                     serviceRow.find('td:eq(2)').removeClass('crossed-out');
+                } else {
+                    serviceRow.find('td:eq(2)').addClass('crossed-out');
                 }
 
                 updateTotalServiceFee();
@@ -380,15 +418,26 @@
             function updateTotalServiceFee() {
                 let totalAssemblyFee = 0;
                 const flatShippingFee = 200;
+                const services = [
+                    { key: 'bounce_check', fee: 35 },
+                    { key: 'design_bath', fee: 150 },
+                    { key: 'design_kitchen', fee: 250 },
+                    { key: 'modification', fee: 75 }
+                ];
 
                 Object.values(selectedProducts).forEach(product => {
                     const assembly = parseFloat(products.find(p => p['Item Code'] === product.code)['Assembly']);
-
                     totalAssemblyFee += assembly * 20 * product.quantity;
                 });
 
                 $('#recommendedServiceTable tbody tr[data-service="assembly"] td:eq(2)').text(`$${totalAssemblyFee.toFixed(2)}`);
                 $('#recommendedServiceTable tbody tr[data-service="shipping"] td:eq(2)').text(`$${flatShippingFee.toFixed(2)}`);
+
+                services.forEach(service => {
+                    const fee = $(`.service-checkbox[data-service="${service.key}"]`).is(':checked') ? service.fee : service.fee;
+                    const className = $(`.service-checkbox[data-service="${service.key}"]`).is(':checked') ? '' : 'crossed-out';
+                    $('#recommendedServiceTable tbody tr[data-service="' + service.key + '"] td:eq(2)').text(`$${fee.toFixed(2)}`).addClass(className);
+                });
             }
 
             // Update total price
@@ -397,14 +446,41 @@
 
                 $('#recommendedServiceTable tbody tr').each(function() {
                     const totalServiceFee = parseFloat($(this).find('td:eq(2)').text().replace('$', ''));
-                    if (!$(this).find('.service-checkbox').is(':checked')) {
-                        totalPrice += totalServiceFee;
+                    if ($(this).find('.service-checkbox').is(':checked')) {
+                        totalPrice += totalServiceFee; // Add service fee if selected
                     }
                 });
 
                 $('#totalPrice').text(`Subtotal: $${totalPrice.toFixed(2)}`);
                 $('#totalPriceAfterTax').text(`Subtotal after tax (8.25%): $${(totalPrice * 1.0825).toFixed(2)}`);
             }
+
+            // Download the quote as an Excel file
+            $('#downloadExcel').on('click', function() {
+                const wb = XLSX.utils.book_new();
+
+                // Selected products sheet
+                const selectedProductsData = [['Item Code', 'Color', 'Description', 'Unit Price', 'Total Price', 'Quantity']];
+                Object.values(selectedProducts).forEach(product => {
+                    selectedProductsData.push([product.code, product.color, product.description, product.unitPrice, product.unitPrice * product.quantity, product.quantity]);
+                });
+                const selectedProductsSheet = XLSX.utils.aoa_to_sheet(selectedProductsData);
+                XLSX.utils.book_append_sheet(wb, selectedProductsSheet, 'Selected Products');
+
+                // Recommended services sheet
+                const recommendedServicesData = [['Service', 'Unit Service Fee', 'Total Service Fee', 'Selected']];
+                $('#recommendedServiceTable tbody tr').each(function() {
+                    const service = $(this).find('td:eq(0)').text();
+                    const unitServiceFee = $(this).find('td:eq(1)').text();
+                    const totalServiceFee = $(this).find('td:eq(2)').text();
+                    const isSelected = $(this).find('.service-checkbox').is(':checked') ? 'Yes' : 'No';
+                    recommendedServicesData.push([service, unitServiceFee, totalServiceFee, isSelected]);
+                });
+                const recommendedServicesSheet = XLSX.utils.aoa_to_sheet(recommendedServicesData);
+                XLSX.utils.book_append_sheet(wb, recommendedServicesSheet, 'Recommended Services');
+
+                XLSX.writeFile(wb, 'Quote_Estimator.xlsx');
+            });
         });
     </script>
 </body>
