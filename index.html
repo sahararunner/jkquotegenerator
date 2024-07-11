@@ -24,17 +24,15 @@
             margin-top: -10px;
             margin-bottom: 20px;
         }
-        label {
-            font-size: 14px;
-            color: #555;
-        }
         .autocomplete {
             position: relative;
             display: inline-block;
             width: 100%;
             max-width: 400px;
+            margin-bottom: 10px;
         }
-        .autocomplete input {
+        .autocomplete input,
+        .autocomplete select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ced4da;
@@ -87,7 +85,7 @@
             background-color: #343a40;
             color: #fff;
         }
-        th.unit-service-fee {
+        th.note {
             width: 300px; /* Adjust width as needed */
         }
         .quantity-control, .assembly-quantity {
@@ -139,7 +137,8 @@
             align-items: center.
         }
         .actions button,
-        #downloadExcel {
+        #downloadExcel,
+        #checkStock {
             padding: 10px 20px;
             font-size: 14px;
             cursor: pointer;
@@ -171,6 +170,7 @@
         }
         .discount-select {
             width: 100px;
+            display: inline-block;
         }
         .assembly-status {
             font-size: 12px;
@@ -184,12 +184,40 @@
             display: flex;
             align-items: center;
         }
+        .warning-message {
+            color: red;
+            font-size: 12px;
+            display: none;
+        }
+        .no-border-collapse {
+            border-collapse: collapse;
+        }
+        .icon {
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <h1>Quote Estimator</h1>
     <div class="gray-line">The quote generated using this tool is provided for estimation purposes only. Actual pricing may vary based on a thorough review and recommendation by a J&K representative. For the most accurate quote tailored to your specific needs, we encourage you to consult with our team.</div>
-    <label for="searchInput">Search product:</label>
+    <div class="autocomplete">
+        <select id="filterSelect">
+            <option value="all">All Colors</option>
+            <option value="Castle Grey Shaker">Castle Grey Shaker</option>
+            <option value="Charcoal">Charcoal</option>
+            <option value="Chocolate Glazed">Chocolate Glazed</option>
+            <option value="Cream Glazed">Cream Glazed</option>
+            <option value="Dove">Dove</option>
+            <option value="Expresso">Expresso</option>
+            <option value="Greige">Greige</option>
+            <option value="Hazel Glazed">Hazel Glazed</option>
+            <option value="Java Coffee">Java Coffee</option>
+            <option value="Mahogany">Mahogany</option>
+            <option value="Mocha Glazed">Mocha Glazed</option>
+            <option value="Pearl Glazed">Pearl Glazed</option>
+            <option value="White Shaker">White Shaker</option>
+        </select>
+    </div>
     <div class="autocomplete">
         <input type="text" id="searchInput" placeholder="Search by Item Code or Keyword">
         <div id="autocompleteDropdown" class="autocomplete-items"></div>
@@ -201,11 +229,12 @@
         <table id="selectedProductsTable">
             <thead>
                 <tr>
+                    <th>In-Stock?</th>
                     <th>Item Code</th>
                     <th>Color</th>
                     <th>Description</th>
                     <th>Unit Price</th>
-                    <th>Total Price</th>
+                    <th>Total Product Price</th>
                     <th>Quantity</th>
                     <th>Modification ($75 Flat Fee)</th>
                     <th>Assembly ($20 Unit Fee)</th>
@@ -214,6 +243,7 @@
             </thead>
             <tbody></tbody>
         </table>
+        <button id="checkStock">Check Stock</button>
     </div>
 
     <div id="recommendedService">
@@ -221,9 +251,9 @@
         <table id="recommendedServiceTable">
             <thead>
                 <tr>
-                    <th>Service</th>
-                    <th class="unit-service-fee">Unit Service Fee</th>
-                    <th>Total Service Fee</th>
+                    <th>Type</th>
+                    <th class="note">Note</th>
+                    <th>Fee</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -240,30 +270,28 @@
 
     <div id="adjustments">
         <h2>Adjustments</h2>
-        <table id="adjustmentsTable">
+        <table id="adjustmentsTable" class="no-border-collapse">
             <thead>
                 <tr>
-                    <th>Adjustment Type</th>
+                    <th>Type</th>
+                    <th class="note">Note</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr data-adjustment="discount">
+                <tr>
                     <td>Discount</td>
+                    <td>Please enter discount % per advice from J&K representatives. Discount will only apply on the product price.</td>
                     <td>
-                        <select id="discountSelect" class="discount-select">
-                            <option value="0">0%</option>
-                            <option value="5">5%</option>
-                            <option value="10">10%</option>
-                            <option value="15">15%</option>
-                            <option value="20">20%</option>
-                        </select>
+                        <input type="text" id="discountSelect" class="discount-select" value="0"><span>%</span>
+                        <span class="warning-message" id="discountWarning">Invalid discount value</span>
                     </td>
                 </tr>
-                <tr data-adjustment="tax-exemption">
+                <tr>
                     <td>Tax Exemption</td>
+                    <td></td>
                     <td>
-                        <select id="taxExemptionSelect" class="discount-select">
+                        <select id="taxExemptionSelect">
                             <option value="taxable">Taxable</option>
                             <option value="exempt">Tax Exempted</option>
                         </select>
@@ -308,13 +336,15 @@
             // Autocomplete logic
             $('#searchInput').on('input', function() {
                 const input = $(this).val().toLowerCase();
+                const filterColor = $('#filterSelect').val().toLowerCase();
                 const suggestions = products.filter(product => {
                     const itemCode = product['Item Code'] ? product['Item Code'].toLowerCase() : '';
                     const color = product['Color'] ? product['Color'].toLowerCase() : '';
                     const description = product['Description'] ? product['Description'].toLowerCase() : '';
 
-                    return itemCode.includes(input) || color.includes(input) || description.includes(input);
-                }).slice(0, 5);
+                    const matchesFilter = filterColor === 'all' || color === filterColor;
+                    return matchesFilter && (itemCode.includes(input) || description.includes(input));
+                });
 
                 const dropdown = $('#autocompleteDropdown');
                 dropdown.empty();
@@ -367,19 +397,18 @@
                 const selectedProductsTableBody = $('#selectedProductsTable tbody');
                 selectedProductsTableBody.empty();
 
-                let totalUnitPrice = 0;
+                let totalProductPrice = 0;
 
                 Object.values(selectedProducts).forEach(product => {
                     const totalProductUnitPrice = product.unitPrice * product.quantity;
-                    const modificationFee = product.modification ? 75 : 0;
-                    const assemblyFee = product.assembly * 20;
                     const productRow = $(`
                         <tr data-item-code="${product.code}">
+                            <td class="in-stock-status"></td>
                             <td>${product.code}</td>
                             <td>${product.color}</td>
                             <td>${product.description}</td>
                             <td>$${product.unitPrice.toFixed(2)}</td>
-                            <td>$${(totalProductUnitPrice + modificationFee + assemblyFee).toFixed(2)}</td>
+                            <td>$${totalProductUnitPrice.toFixed(2)}</td>
                             <td>
                                 <div class="quantity-control">
                                     <button class="deduct-quantity">-</button>
@@ -407,11 +436,12 @@
 
                     selectedProductsTableBody.append(productRow);
 
-                    totalUnitPrice += totalProductUnitPrice + modificationFee + assemblyFee;
+                    totalProductPrice += totalProductUnitPrice;
                 });
 
                 updateTotalServiceFee();
-                updateTotalPrice(totalUnitPrice);
+                updateTotalPrice(totalProductPrice);
+                clearInStockStatus();
             }
 
             // Handle quantity add
@@ -472,22 +502,23 @@
 
             // Handle service checkbox change
             $(document).on('change', '.service-checkbox', function() {
-                const service = $(this).attr('data-service');
-                const isChecked = $(this).is(':checked');
-                const serviceRow = $(`#recommendedServiceTable tbody tr[data-service="${service}"]`);
-
-                if (isChecked) {
+                const serviceRow = $(this).closest('tr');
+                if ($(this).is(':checked')) {
                     serviceRow.find('td:eq(2)').removeClass('crossed-out');
                 } else {
                     serviceRow.find('td:eq(2)').addClass('crossed-out');
                 }
-
-                updateTotalServiceFee();
                 updateTotalPrice();
             });
 
-            // Handle discount change
-            $('#discountSelect').on('change', function() {
+            // Handle discount input change
+            $('#discountSelect').on('input', function() {
+                const discountValue = $(this).val();
+                if (!/^(\d{1,2}(\.\d{1,2})?|100(\.0{1,2})?)$/.test(discountValue) || parseFloat(discountValue) < 0 || parseFloat(discountValue) > 100) {
+                    $('#discountWarning').show();
+                } else {
+                    $('#discountWarning').hide();
+                }
                 updateTotalPrice();
             });
 
@@ -498,34 +529,43 @@
 
             // Update total service fee
             function updateTotalServiceFee() {
-                const flatShippingFee = 200;
-
-                $('#recommendedServiceTable tbody tr[data-service="shipping"] td:eq(2)').text(`$${flatShippingFee.toFixed(2)}`);
+                let totalServiceFee = 0;
+                $('#recommendedServiceTable tbody tr').each(function() {
+                    const serviceFee = parseFloat($(this).find('td:eq(2)').text().replace('$', ''));
+                    if ($(this).find('.service-checkbox').is(':checked')) {
+                        totalServiceFee += serviceFee;
+                    }
+                });
+                return totalServiceFee;
             }
 
             // Update total price
-            function updateTotalPrice(totalUnitPrice) {
-                let totalPrice = totalUnitPrice || Object.values(selectedProducts).reduce((acc, product) => {
-                    const modificationFee = product.modification ? 75 : 0;
-                    const assemblyFee = product.assembly * 20;
-                    return acc + (product.unitPrice * product.quantity) + modificationFee + assemblyFee;
+            function updateTotalPrice(totalProductPrice) {
+                totalProductPrice = totalProductPrice || Object.values(selectedProducts).reduce((acc, product) => {
+                    return acc + (product.unitPrice * product.quantity);
                 }, 0);
 
-                $('#recommendedServiceTable tbody tr').each(function() {
-                    const totalServiceFee = parseFloat($(this).find('td:eq(2)').text().replace('$', ''));
-                    if ($(this).find('.service-checkbox').is(':checked')) {
-                        totalPrice += totalServiceFee;
-                    }
-                });
+                const discountValue = $('#discountSelect').val();
+                const discount = parseFloat(discountValue) / 100;
+                let discountedProductPrice = totalProductPrice;
+                if (!isNaN(discount) && discount >= 0 && discount <= 1) {
+                    discountedProductPrice *= (1 - discount);
+                }
 
-                const discount = parseInt($('#discountSelect').val());
-                totalPrice = totalPrice * (1 - discount / 100);
+                const assemblyAndModificationFees = Object.values(selectedProducts).reduce((acc, product) => {
+                    const modificationFee = product.modification ? 75 : 0;
+                    const assemblyFee = product.assembly * 20;
+                    return acc + modificationFee + assemblyFee;
+                }, 0);
 
-                $('#totalPrice').text(`Subtotal: $${totalPrice.toFixed(2)}`);
+                const additionalServiceFee = updateTotalServiceFee();
+                const finalSubtotal = discountedProductPrice + assemblyAndModificationFees + additionalServiceFee;
 
-                let totalPriceAfterTax = totalPrice * 1.0825;
+                $('#totalPrice').text(`Subtotal: $${finalSubtotal.toFixed(2)}`);
+
+                let totalPriceAfterTax = finalSubtotal * 1.0825;
                 if ($('#taxExemptionSelect').val() === 'exempt') {
-                    totalPriceAfterTax = totalPrice;
+                    totalPriceAfterTax = finalSubtotal;
                 }
 
                 $('#totalPriceAfterTax').text(`Subtotal after tax (8.25%): $${totalPriceAfterTax.toFixed(2)}`);
@@ -536,36 +576,64 @@
                 const wb = XLSX.utils.book_new();
 
                 // Selected products sheet
-                const selectedProductsData = [['Item Code', 'Color', 'Description', 'Unit Price', 'Total Price', 'Quantity', 'Modification', 'Modification Details', 'Assembly Quantity']];
+                const selectedProductsData = [['In-Stock?', 'Item Code', 'Color', 'Description', 'Unit Price', 'Total Product Price', 'Quantity', 'Modification', 'Modification Details', 'Assembly Quantity']];
                 Object.values(selectedProducts).forEach(product => {
-                    selectedProductsData.push([product.code, product.color, product.description, product.unitPrice, product.unitPrice * product.quantity, product.quantity, product.modification ? 'Yes' : 'No', product.modificationText, product.assembly]);
+                    selectedProductsData.push([
+                        $(`#selectedProductsTable tbody tr[data-item-code="${product.code}"] .in-stock-status`).html(),
+                        product.code,
+                        product.color,
+                        product.description,
+                        product.unitPrice,
+                        product.unitPrice * product.quantity,
+                        product.quantity,
+                        product.modification ? 'Yes' : 'No',
+                        product.modificationText,
+                        product.assembly
+                    ]);
                 });
                 const selectedProductsSheet = XLSX.utils.aoa_to_sheet(selectedProductsData);
                 XLSX.utils.book_append_sheet(wb, selectedProductsSheet, 'Selected Products');
 
                 // Shipping services sheet
-                const recommendedServicesData = [['Service', 'Unit Service Fee', 'Total Service Fee', 'Selected']];
+                const recommendedServicesData = [['Type', 'Note', 'Fee', 'Actions']];
                 $('#recommendedServiceTable tbody tr').each(function() {
                     const service = $(this).find('td:eq(0)').text();
-                    const unitServiceFee = $(this).find('td:eq(1)').text();
-                    const totalServiceFee = $(this).find('td:eq(2)').text();
+                    const note = $(this).find('td:eq(1)').text();
+                    const serviceFee = $(this).find('td:eq(2)').text();
                     const isSelected = $(this).find('.service-checkbox').is(':checked') ? 'Yes' : 'No';
-                    recommendedServicesData.push([service, unitServiceFee, totalServiceFee, isSelected]);
+                    recommendedServicesData.push([service, note, serviceFee, isSelected]);
                 });
                 const recommendedServicesSheet = XLSX.utils.aoa_to_sheet(recommendedServicesData);
                 XLSX.utils.book_append_sheet(wb, recommendedServicesSheet, 'Shipping Services');
 
                 // Adjustments sheet
-                const adjustmentsData = [['Adjustment Type', 'Actions']];
+                const adjustmentsData = [['Type', 'Note', 'Actions']];
                 const discount = $('#discountSelect').val() + '%';
                 const taxExemption = $('#taxExemptionSelect').val() === 'exempt' ? 'Yes' : 'No';
-                adjustmentsData.push(['Discount', discount]);
-                adjustmentsData.push(['Tax Exemption', taxExemption]);
+                adjustmentsData.push(['Discount', 'Please enter discount % per advice from J&K representatives. Discount will only apply on the product price.', discount]);
+                adjustmentsData.push(['Tax Exemption', '', taxExemption]);
                 const adjustmentsSheet = XLSX.utils.aoa_to_sheet(adjustmentsData);
                 XLSX.utils.book_append_sheet(wb, adjustmentsSheet, 'Adjustments');
 
                 XLSX.writeFile(wb, 'Quote_Estimator.xlsx');
             });
+
+            // Handle Check Stock button click
+            $('#checkStock').on('click', function() {
+                Object.values(selectedProducts).forEach(product => {
+                    const inventory = parseInt(products.find(p => p['Item Code'] === product.code)['Inventory']);
+                    const inStockStatus = product.quantity <= inventory
+                        ? '<span class="icon" style="color: green;">&#x25CF;</span>'
+                        : '<span class="icon" style="color: red;">&#x25CF;</span>';
+                    $(`#selectedProductsTable tbody tr[data-item-code="${product.code}"]`).find('.in-stock-status').html(inStockStatus);
+                });
+            });
+
+            function clearInStockStatus() {
+                $('#selectedProductsTable tbody tr').each(function() {
+                    $(this).find('.in-stock-status').text('');
+                });
+            }
         });
     </script>
 </body>
