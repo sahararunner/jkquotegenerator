@@ -107,7 +107,7 @@
         .delete-btn {
             color: red;
         }
-        #totalPrice, #totalPriceAfterTax {
+        #totalPrice, #totalPriceAfterTax, #subtotalShipping {
             margin-top: 10px;
             font-weight: bold;
             font-size: 14px;
@@ -192,8 +192,24 @@
         .no-border-collapse {
             border-collapse: collapse;
         }
-        .icon {
-            font-size: 16px;
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-left: 5px;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABhklEQVQ4y5XTMWsTQRQG4D8pCMUUxUQJQiQIi6Ozs5mVnCwsLLtCLwsU1eRmCwvBJU0sDgElyDAmEDto+whCk2CTSWG7enPmBvlluzgldrzQ//vdu/eeac0URFCqoZCoBEhEY7iLCSkXLHzAhlKQemzABzFXLhMBCIR88GeA9D5qnCcLPwpnCmgq4Dw+H5EDXLNq6ETACq4vBMd43MwnxXygWhEXLNu2G82G33exi7jWeu8PoS9P44uLUVtDShDDiCHwRkEnbI3MhmbBmrAzqsoFglFg3jdf0jRIF0+g27sZJlLsiNmr7rC5AqGrEpYUnugp8s2pjCNjzFStx2mCNedRZ29gxL3AG/xtZ8DpDiLWfUJrLGSC1jFXhVtyaBRBB0MIPT3ALfVIM7HGV5NbaVt4Glx6f49kKP44bdpZ+rsoGNhg+GdNOQ/Hd+AdHux8bLf7Kh0AEIlH/M5VZkZQAAAABJRU5ErkJggg==');
+            background-size: cover;
+            vertical-align: middle;
+        }
+        .info-tooltip {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
         }
     </style>
 </head>
@@ -229,15 +245,15 @@
         <table id="selectedProductsTable">
             <thead>
                 <tr>
-                    <th>In-Stock?</th>
+                    <th>In-Stock?<span class="info-icon" data-info="Please contact J&K representatives to verify stock if showing 0 or low stock.">ℹ️</span></th>
                     <th>Item Code</th>
                     <th>Color</th>
                     <th>Description</th>
                     <th>Unit Price</th>
                     <th>Total Product Price</th>
                     <th>Quantity</th>
-                    <th>Modification ($75 Flat Fee)</th>
-                    <th>Assembly ($20 Unit Fee)</th>
+                    <th>Modification ($75 Flat Fee)<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
+                    <th>Assembly ($20 Unit Fee)<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -252,15 +268,13 @@
             <thead>
                 <tr>
                     <th>Type</th>
-                    <th class="note">Note</th>
                     <th>Fee</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr data-service="shipping">
-                    <td>Local Shipping</td>
-                    <td>Estimated flat fee $200 for local delivery by J&K. Fee may vary by distance & volume. For all other shipping methods (3PL carrier, Fedex, etc.), please contact our representatives for more details.</td>
+                    <td>Local Shipping<span class="info-icon" data-info="Estimated flat fee $200 for local delivery by J&K. Fee may vary by distance & volume. For all other shipping methods (3PL carrier, Fedex, etc.), please contact our representatives for more details.">ℹ️</span></td>
                     <td class="crossed-out">$200.00</td>
                     <td><input type="checkbox" class="service-checkbox" data-service="shipping"><span class="service-explanation">Select Service</span></td>
                 </tr>
@@ -268,20 +282,19 @@
         </table>
     </div>
 
+    <div id="subtotalShipping">Subtotal: $0.00</div>
     <div id="adjustments">
         <h2>Adjustments</h2>
         <table id="adjustmentsTable" class="no-border-collapse">
             <thead>
                 <tr>
                     <th>Type</th>
-                    <th class="note">Note</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>Discount</td>
-                    <td>Please enter discount % per advice from J&K representatives. Discount will only apply on the product price.</td>
+                    <td>Discount<span class="info-icon" data-info="Please enter discount % per advice from J&K representatives. Discount will only apply on the product price.">ℹ️</span></td>
                     <td>
                         <input type="text" id="discountSelect" class="discount-select" value="0"><span>%</span>
                         <span class="warning-message" id="discountWarning">Invalid discount value</span>
@@ -289,7 +302,6 @@
                 </tr>
                 <tr>
                     <td>Tax Exemption</td>
-                    <td></td>
                     <td>
                         <select id="taxExemptionSelect">
                             <option value="taxable">Taxable</option>
@@ -301,8 +313,8 @@
         </table>
     </div>
 
-    <div id="totalPrice">Subtotal: $0.00</div>
-    <div id="totalPriceAfterTax">Subtotal after tax (8.25%): $0.00</div>
+    <div id="totalPrice">Subtotal after Discount: $0.00</div>
+    <div id="totalPriceAfterTax">Subtotal after Discount & Tax: $0.00</div>
 
     <button id="downloadExcel" style="margin-top: 20px;">Download Quote as Excel</button>
 
@@ -418,7 +430,7 @@
                             </td>
                             <td class="modification">
                                 <input type="checkbox" class="modification-checkbox" data-item-code="${product.code}" ${product.modification ? 'checked' : ''}>
-                                <textarea class="modification-text" placeholder="Modification details" data-item-code="${product.code}">${product.modificationText}</textarea>
+                                <textarea class="modification-text" placeholder="Modification details" data-item-code="${product.code}" style="width: 150px;">${product.modificationText}</textarea>
                             </td>
                             <td>
                                 <div class="assembly">
@@ -504,9 +516,9 @@
             $(document).on('change', '.service-checkbox', function() {
                 const serviceRow = $(this).closest('tr');
                 if ($(this).is(':checked')) {
-                    serviceRow.find('td:eq(2)').removeClass('crossed-out');
+                    serviceRow.find('td:eq(1)').removeClass('crossed-out');
                 } else {
-                    serviceRow.find('td:eq(2)').addClass('crossed-out');
+                    serviceRow.find('td:eq(1)').addClass('crossed-out');
                 }
                 updateTotalPrice();
             });
@@ -531,7 +543,7 @@
             function updateTotalServiceFee() {
                 let totalServiceFee = 0;
                 $('#recommendedServiceTable tbody tr').each(function() {
-                    const serviceFee = parseFloat($(this).find('td:eq(2)').text().replace('$', ''));
+                    const serviceFee = parseFloat($(this).find('td:eq(1)').text().replace('$', ''));
                     if ($(this).find('.service-checkbox').is(':checked')) {
                         totalServiceFee += serviceFee;
                     }
@@ -559,23 +571,25 @@
                 }, 0);
 
                 const additionalServiceFee = updateTotalServiceFee();
-                const finalSubtotal = discountedProductPrice + assemblyAndModificationFees + additionalServiceFee;
+                const finalSubtotal = totalProductPrice + assemblyAndModificationFees + additionalServiceFee;
 
-                $('#totalPrice').text(`Subtotal: $${finalSubtotal.toFixed(2)}`);
+                $('#subtotalShipping').text(`Subtotal: $${finalSubtotal.toFixed(2)}`);
 
-                let totalPriceAfterTax = finalSubtotal * 1.0825;
+                const finalSubtotalAfterDiscount = discountedProductPrice + assemblyAndModificationFees + additionalServiceFee;
+                $('#totalPrice').text(`Subtotal after Discount: $${finalSubtotalAfterDiscount.toFixed(2)}`);
+
+                let totalPriceAfterTax = finalSubtotalAfterDiscount * 1.0825;
                 if ($('#taxExemptionSelect').val() === 'exempt') {
-                    totalPriceAfterTax = finalSubtotal;
+                    totalPriceAfterTax = finalSubtotalAfterDiscount;
                 }
 
-                $('#totalPriceAfterTax').text(`Subtotal after tax (8.25%): $${totalPriceAfterTax.toFixed(2)}`);
+                $('#totalPriceAfterTax').text(`Subtotal after Discount & Tax: $${totalPriceAfterTax.toFixed(2)}`);
             }
 
             // Download the quote as an Excel file
             $('#downloadExcel').on('click', function() {
                 const wb = XLSX.utils.book_new();
 
-                // Selected products sheet
                 const selectedProductsData = [['In-Stock?', 'Item Code', 'Color', 'Description', 'Unit Price', 'Total Product Price', 'Quantity', 'Modification', 'Modification Details', 'Assembly Quantity']];
                 Object.values(selectedProducts).forEach(product => {
                     selectedProductsData.push([
@@ -591,40 +605,41 @@
                         product.assembly
                     ]);
                 });
-                const selectedProductsSheet = XLSX.utils.aoa_to_sheet(selectedProductsData);
-                XLSX.utils.book_append_sheet(wb, selectedProductsSheet, 'Selected Products');
 
-                // Shipping services sheet
-                const recommendedServicesData = [['Type', 'Note', 'Fee', 'Actions']];
+                const shippingServicesData = [['Type', 'Fee', 'Selected']];
                 $('#recommendedServiceTable tbody tr').each(function() {
                     const service = $(this).find('td:eq(0)').text();
-                    const note = $(this).find('td:eq(1)').text();
-                    const serviceFee = $(this).find('td:eq(2)').text();
+                    const serviceFee = $(this).find('td:eq(1)').text();
                     const isSelected = $(this).find('.service-checkbox').is(':checked') ? 'Yes' : 'No';
-                    recommendedServicesData.push([service, note, serviceFee, isSelected]);
+                    shippingServicesData.push([service, serviceFee, isSelected]);
                 });
-                const recommendedServicesSheet = XLSX.utils.aoa_to_sheet(recommendedServicesData);
-                XLSX.utils.book_append_sheet(wb, recommendedServicesSheet, 'Shipping Services');
 
-                // Adjustments sheet
-                const adjustmentsData = [['Type', 'Note', 'Actions']];
+                const adjustmentsData = [['Type', 'Actions']];
                 const discount = $('#discountSelect').val() + '%';
                 const taxExemption = $('#taxExemptionSelect').val() === 'exempt' ? 'Yes' : 'No';
-                adjustmentsData.push(['Discount', 'Please enter discount % per advice from J&K representatives. Discount will only apply on the product price.', discount]);
-                adjustmentsData.push(['Tax Exemption', '', taxExemption]);
-                const adjustmentsSheet = XLSX.utils.aoa_to_sheet(adjustmentsData);
-                XLSX.utils.book_append_sheet(wb, adjustmentsSheet, 'Adjustments');
+                adjustmentsData.push(['Discount', discount]);
+                adjustmentsData.push(['Tax Exemption', taxExemption]);
+
+                const summaryData = [
+                    ['Subtotal', $('#subtotalShipping').text().split('$')[1]],
+                    ['Total after Discount', $('#totalPrice').text().split('$')[1]],
+                    ['Total after Discount & Tax', $('#totalPriceAfterTax').text().split('$')[1]]
+                ];
+
+                const combinedData = [...selectedProductsData, [''], ...shippingServicesData, [''], ...adjustmentsData, [''], ...summaryData];
+                const combinedSheet = XLSX.utils.aoa_to_sheet(combinedData);
+                XLSX.utils.book_append_sheet(wb, combinedSheet, 'Quote Details');
 
                 XLSX.writeFile(wb, 'Quote_Estimator.xlsx');
             });
 
-            // Handle Check Stock button click
+            // Handle Check In-Stock button click
             $('#checkStock').on('click', function() {
                 Object.values(selectedProducts).forEach(product => {
                     const inventory = parseInt(products.find(p => p['Item Code'] === product.code)['Inventory']);
                     const inStockStatus = product.quantity <= inventory
-                        ? '<span class="icon" style="color: green;">&#x25CF;</span>'
-                        : '<span class="icon" style="color: red;">&#x25CF;</span>';
+                        ? '<span style="color: green;">&#x25CF;</span><span style="margin-left: 5px;">In-stock</span>'
+                        : '<span style="color: red;">&#x25CF;</span><span style="margin-left: 5px;">0 or low stock</span>';
                     $(`#selectedProductsTable tbody tr[data-item-code="${product.code}"]`).find('.in-stock-status').html(inStockStatus);
                 });
             });
@@ -634,6 +649,22 @@
                     $(this).find('.in-stock-status').text('');
                 });
             }
+
+            // Tooltip logic
+            $(document).on('mouseenter', '.info-icon', function() {
+                const infoText = $(this).data('info');
+                const tooltip = $(`<div class="info-tooltip">${infoText}</div>`);
+                $('body').append(tooltip);
+                const offset = $(this).offset();
+                tooltip.css({
+                    top: offset.top + 20,
+                    left: offset.left,
+                }).fadeIn(200);
+            });
+
+            $(document).on('mouseleave', '.info-icon', function() {
+                $('.info-tooltip').remove();
+            });
         });
     </script>
 </body>
