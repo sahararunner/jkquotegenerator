@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,16 +15,19 @@
             padding: 20px;
             font-size: 12px;
         }
+
         h1 {
             color: #333;
             font-size: 20px;
         }
+
         .gray-line {
             color: gray;
             font-size: 12px;
             margin-top: -10px;
             margin-bottom: 20px;
         }
+
         .autocomplete {
             position: relative;
             display: inline-block;
@@ -31,6 +35,7 @@
             max-width: 400px;
             margin-bottom: 10px;
         }
+
         .autocomplete input,
         .autocomplete select {
             width: 100%;
@@ -39,6 +44,7 @@
             border-radius: 4px;
             font-size: 12px;
         }
+
         .autocomplete-items {
             position: absolute;
             border: 1px solid #ced4da;
@@ -50,49 +56,67 @@
             width: 100%;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         .autocomplete-item {
             padding: 8px;
             cursor: pointer;
             border-bottom: 1px solid #e9ecef;
             white-space: normal;
         }
+
         .autocomplete-item:hover {
             background-color: #e9ecef;
         }
+
         #selectedProducts {
             margin-top: 20px;
             border-top: 1px solid #ced4da;
             padding-top: 10px;
         }
+
         h2 {
             font-size: 16px;
             text-decoration: underline;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
         }
-        table, th, td {
+
+        table,
+        th,
+        td {
             border: 1px solid #ced4da;
         }
-        th, td {
+
+        th,
+        td {
             padding: 8px;
             text-align: left;
             font-size: 12px;
         }
+
         th {
             background-color: #343a40;
             color: #fff;
         }
+
         th.note {
-            width: 300px; /* Adjust width as needed */
+            width: 300px;
+            /* Adjust width as needed */
         }
-        .quantity-control, .assembly-quantity {
+
+        .quantity-control,
+        .modification-quantity,
+        .assembly-quantity {
             display: flex;
             align-items: center;
         }
+
         .quantity-control button,
+        .modification-quantity button,
         .assembly-quantity button,
         .delete-btn {
             padding: 5px;
@@ -104,10 +128,14 @@
             background-color: #ccc;
             color: black;
         }
+
         .delete-btn {
             color: red;
         }
-        #totalPrice, #totalPriceAfterTax, #subtotalShipping {
+
+        #totalPrice,
+        #totalPriceAfterTax,
+        #subtotalShipping {
             margin-top: 10px;
             font-weight: bold;
             font-size: 14px;
@@ -116,6 +144,7 @@
             padding: 10px;
             border-radius: 4px;
         }
+
         #excelFile {
             position: absolute;
             top: 20px;
@@ -125,20 +154,22 @@
             border-radius: 4px;
             font-size: 12px;
         }
+
         .product-details {
             display: flex;
             justify-content: space-between;
             width: 100%;
         }
+
         .actions {
             margin-top: 20px;
             display: flex;
             justify-content: flex-start;
             align-items: center.
         }
+
         .actions button,
-        #downloadExcel,
-        #checkStock {
+        #downloadExcel {
             padding: 10px 20px;
             font-size: 14px;
             cursor: pointer;
@@ -148,50 +179,62 @@
             color: white;
             margin-right: 10px;
         }
+
         .service-checkbox {
             margin-right: 5px;
         }
+
         .service-explanation {
             display: inline;
             font-size: 12px;
             color: #555;
         }
+
         .crossed-out {
             text-decoration: line-through;
             color: red;
         }
+
         .modification-text,
         .assembly-quantity {
             width: 150px;
             margin-left: 10px;
         }
+
         .assembly-quantity input {
             width: 50px;
         }
+
         .discount-select {
             width: 100px;
             display: inline-block;
         }
+
         .assembly-status {
             font-size: 12px;
             color: #555;
             margin-left: 10px;
         }
+
         .modification-checkbox {
             vertical-align: middle;
         }
+
         .modification {
             display: flex;
             align-items: center;
         }
+
         .warning-message {
             color: red;
             font-size: 12px;
             display: none;
         }
+
         .no-border-collapse {
             border-collapse: collapse;
         }
+
         .info-icon {
             display: inline-block;
             width: 16px;
@@ -201,6 +244,7 @@
             background-size: cover;
             vertical-align: middle;
         }
+
         .info-tooltip {
             display: none;
             position: absolute;
@@ -213,6 +257,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Quote Estimator</h1>
     <div class="gray-line">The quote generated using this tool is provided for estimation purposes only. Actual pricing may vary based on a thorough review and recommendation by a J&K representative. For the most accurate quote tailored to your specific needs, we encourage you to consult with our team.</div>
@@ -245,21 +290,20 @@
         <table id="selectedProductsTable">
             <thead>
                 <tr>
-                    <th>In-Stock?<span class="info-icon" data-info="Please contact J&K representatives to verify stock if showing 0 or low stock.">ℹ️</span></th>
+                    <th>In-Stock?<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
                     <th>Item Code</th>
                     <th>Color</th>
                     <th>Description</th>
                     <th>Unit Price</th>
                     <th>Total Product Price</th>
                     <th>Quantity</th>
-                    <th>Modification ($75 Flat Fee)<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
-                    <th>Assembly ($20 Unit Fee)<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
+                    <th>Modification ($75/unit)<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
+                    <th>Assembly ($20/unit)<span class="info-icon" data-info="Add notes here">ℹ️</span></th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
-        <button id="checkStock">Check Stock</button>
     </div>
 
     <div id="recommendedService">
@@ -319,14 +363,14 @@
     <button id="downloadExcel" style="margin-top: 20px;">Download Quote as Excel</button>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             let products = []; // Array to store products from Excel
             let selectedProducts = {}; // Object to store selected products
 
             // Function to read Excel file data
             function readExcelFile(file) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     const data = new Uint8Array(event.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const sheetName = workbook.SheetNames[0]; // Assuming data is in the first sheet
@@ -340,13 +384,13 @@
             }
 
             // Handle file input change
-            $('#excelFile').on('change', function(event) {
+            $('#excelFile').on('change', function (event) {
                 const file = event.target.files[0];
                 readExcelFile(file);
             });
 
             // Autocomplete logic
-            $('#searchInput').on('input', function() {
+            $('#searchInput').on('input', function () {
                 const input = $(this).val().toLowerCase();
                 const filterColor = $('#filterSelect').val().toLowerCase();
                 const suggestions = products.filter(product => {
@@ -372,7 +416,7 @@
             });
 
             // Display selected product and update total price
-            $(document).on('click', '.autocomplete-item', function() {
+            $(document).on('click', '.autocomplete-item', function () {
                 const selectedCode = $(this).attr('data-item-code');
                 const selectedColor = $(this).attr('data-color');
                 const selectedDescription = $(this).attr('data-description');
@@ -389,7 +433,7 @@
                         description: selectedDescription,
                         unitPrice: selectedUnitPrice,
                         quantity: 1,
-                        modification: false,
+                        modification: 0,
                         modificationText: "",
                         assembly: 0,
                         canBeAssembled: canBeAssembled
@@ -398,6 +442,7 @@
 
                 // Update selected products display
                 updateSelectedProductsDisplay();
+                checkStock();
 
                 // Clear and hide dropdown
                 $('#autocompleteDropdown').hide();
@@ -429,17 +474,19 @@
                                 </div>
                             </td>
                             <td class="modification">
-                                <input type="checkbox" class="modification-checkbox" data-item-code="${product.code}" ${product.modification ? 'checked' : ''}>
-                                <textarea class="modification-text" placeholder="Modification details" data-item-code="${product.code}" style="width: 150px;">${product.modificationText}</textarea>
+                                <div class="modification-quantity">
+                                    <button class="deduct-modification" data-item-code="${product.code}">-</button>
+                                    <span>${product.modification}</span>
+                                    <button class="add-modification" data-item-code="${product.code}">+</button>
+                                </div>
+                                <textarea class="modification-text" placeholder="Modification details" data-item-code="${product.code}" style="width: 150px; resize: vertical;">${product.modificationText}</textarea>
                             </td>
                             <td>
-                                <div class="assembly">
-                                    <div class="assembly-quantity">
-                                        <button class="deduct-assembly" data-item-code="${product.code}" ${!product.canBeAssembled ? 'disabled' : ''}>-</button>
-                                        <span>${product.assembly}</span>
-                                        <button class="add-assembly" data-item-code="${product.code}" ${!product.canBeAssembled ? 'disabled' : ''}>+</button>
-                                        <span class="assembly-status">${product.canBeAssembled ? 'Assembly service available' : 'Assembly service unavailable'}</span>
-                                    </div>
+                                <div class="assembly-quantity">
+                                    <button class="deduct-assembly" data-item-code="${product.code}" ${!product.canBeAssembled ? 'disabled' : ''}>-</button>
+                                    <span>${product.assembly}</span>
+                                    <button class="add-assembly" data-item-code="${product.code}" ${!product.canBeAssembled ? 'disabled' : ''}>+</button>
+                                    <span class="assembly-status">${product.canBeAssembled ? 'Assembly service available' : 'Assembly service unavailable'}</span>
                                 </div>
                             </td>
                             <td><button class="delete-btn">x</button></td>
@@ -453,49 +500,75 @@
 
                 updateTotalServiceFee();
                 updateTotalPrice(totalProductPrice);
-                clearInStockStatus();
             }
 
             // Handle quantity add
-            $(document).on('click', '.add-quantity', function() {
+            $(document).on('click', '.add-quantity', function () {
                 const productCode = $(this).closest('tr').attr('data-item-code');
                 selectedProducts[productCode].quantity += 1;
+                if (selectedProducts[productCode].quantity < selectedProducts[productCode].modification) {
+                    selectedProducts[productCode].modification = selectedProducts[productCode].quantity;
+                }
                 updateSelectedProductsDisplay();
+                checkStock();
             });
 
             // Handle quantity deduct
-            $(document).on('click', '.deduct-quantity', function() {
+            $(document).on('click', '.deduct-quantity', function () {
                 const productCode = $(this).closest('tr').attr('data-item-code');
                 if (selectedProducts[productCode].quantity > 1) {
                     selectedProducts[productCode].quantity -= 1;
+                    if (selectedProducts[productCode].quantity < selectedProducts[productCode].modification) {
+                        selectedProducts[productCode].modification = selectedProducts[productCode].quantity;
+                        if (selectedProducts[productCode].assembly > selectedProducts[productCode].modification) {
+                            selectedProducts[productCode].assembly = selectedProducts[productCode].modification;
+                        }
+                    }
                 } else {
                     delete selectedProducts[productCode];
                 }
                 updateSelectedProductsDisplay();
+                checkStock();
             });
 
             // Handle delete product
-            $(document).on('click', '.delete-btn', function() {
+            $(document).on('click', '.delete-btn', function () {
                 const productCode = $(this).closest('tr').attr('data-item-code');
                 delete selectedProducts[productCode];
                 updateSelectedProductsDisplay();
+                checkStock();
             });
 
-            // Handle modification checkbox change
-            $(document).on('change', '.modification-checkbox', function() {
+            // Handle modification add
+            $(document).on('click', '.add-modification', function () {
                 const productCode = $(this).attr('data-item-code');
-                selectedProducts[productCode].modification = $(this).is(':checked');
-                updateSelectedProductsDisplay();
+                if (selectedProducts[productCode].modification < selectedProducts[productCode].quantity) {
+                    selectedProducts[productCode].modification += 1;
+                    if (selectedProducts[productCode].modification > selectedProducts[productCode].assembly) {
+                        selectedProducts[productCode].assembly = selectedProducts[productCode].modification;
+                    }
+                    updateSelectedProductsDisplay();
+                }
+            });
+
+            // Handle modification deduct
+            $(document).on('click', '.deduct-modification', function () {
+                const productCode = $(this).attr('data-item-code');
+                if (selectedProducts[productCode].modification > 0) {
+                    selectedProducts[productCode].modification -= 1;
+                    selectedProducts[productCode].assembly -= 1;
+                    updateSelectedProductsDisplay();
+                }
             });
 
             // Handle modification text change
-            $(document).on('input', '.modification-text', function() {
+            $(document).on('input', '.modification-text', function () {
                 const productCode = $(this).attr('data-item-code');
                 selectedProducts[productCode].modificationText = $(this).val();
             });
 
             // Handle assembly quantity add
-            $(document).on('click', '.add-assembly', function() {
+            $(document).on('click', '.add-assembly', function () {
                 const productCode = $(this).attr('data-item-code');
                 if (selectedProducts[productCode].assembly < selectedProducts[productCode].quantity) {
                     selectedProducts[productCode].assembly += 1;
@@ -504,16 +577,16 @@
             });
 
             // Handle assembly quantity deduct
-            $(document).on('click', '.deduct-assembly', function() {
+            $(document).on('click', '.deduct-assembly', function () {
                 const productCode = $(this).attr('data-item-code');
-                if (selectedProducts[productCode].assembly > 0) {
+                if (selectedProducts[productCode].assembly > selectedProducts[productCode].modification) {
                     selectedProducts[productCode].assembly -= 1;
                     updateSelectedProductsDisplay();
                 }
             });
 
             // Handle service checkbox change
-            $(document).on('change', '.service-checkbox', function() {
+            $(document).on('change', '.service-checkbox', function () {
                 const serviceRow = $(this).closest('tr');
                 if ($(this).is(':checked')) {
                     serviceRow.find('td:eq(1)').removeClass('crossed-out');
@@ -524,7 +597,7 @@
             });
 
             // Handle discount input change
-            $('#discountSelect').on('input', function() {
+            $('#discountSelect').on('input', function () {
                 const discountValue = $(this).val();
                 if (!/^(\d{1,2}(\.\d{1,2})?|100(\.0{1,2})?)$/.test(discountValue) || parseFloat(discountValue) < 0 || parseFloat(discountValue) > 100) {
                     $('#discountWarning').show();
@@ -535,14 +608,14 @@
             });
 
             // Handle tax exemption change
-            $('#taxExemptionSelect').on('change', function() {
+            $('#taxExemptionSelect').on('change', function () {
                 updateTotalPrice();
             });
 
             // Update total service fee
             function updateTotalServiceFee() {
                 let totalServiceFee = 0;
-                $('#recommendedServiceTable tbody tr').each(function() {
+                $('#recommendedServiceTable tbody tr').each(function () {
                     const serviceFee = parseFloat($(this).find('td:eq(1)').text().replace('$', ''));
                     if ($(this).find('.service-checkbox').is(':checked')) {
                         totalServiceFee += serviceFee;
@@ -565,8 +638,8 @@
                 }
 
                 const assemblyAndModificationFees = Object.values(selectedProducts).reduce((acc, product) => {
-                    const modificationFee = product.modification ? 75 : 0;
-                    const assemblyFee = product.assembly * 20;
+                    const modificationFee = product.modification * 75;
+                    const assemblyFee = (product.assembly - product.modification) * 20;
                     return acc + modificationFee + assemblyFee;
                 }, 0);
 
@@ -587,7 +660,7 @@
             }
 
             // Download the quote as an Excel file
-            $('#downloadExcel').on('click', function() {
+            $('#downloadExcel').on('click', function () {
                 const wb = XLSX.utils.book_new();
 
                 const selectedProductsData = [['In-Stock?', 'Item Code', 'Color', 'Description', 'Unit Price', 'Total Product Price', 'Quantity', 'Modification', 'Modification Details', 'Assembly Quantity']];
@@ -600,14 +673,14 @@
                         product.unitPrice,
                         product.unitPrice * product.quantity,
                         product.quantity,
-                        product.modification ? 'Yes' : 'No',
+                        product.modification,
                         product.modificationText,
                         product.assembly
                     ]);
                 });
 
                 const shippingServicesData = [['Type', 'Fee', 'Selected']];
-                $('#recommendedServiceTable tbody tr').each(function() {
+                $('#recommendedServiceTable tbody tr').each(function () {
                     const service = $(this).find('td:eq(0)').text();
                     const serviceFee = $(this).find('td:eq(1)').text();
                     const isSelected = $(this).find('.service-checkbox').is(':checked') ? 'Yes' : 'No';
@@ -633,25 +706,26 @@
                 XLSX.writeFile(wb, 'Quote_Estimator.xlsx');
             });
 
-            // Handle Check In-Stock button click
-            $('#checkStock').on('click', function() {
+            // Handle stock check whenever the order list quantity changes
+            function checkStock() {
                 Object.values(selectedProducts).forEach(product => {
                     const inventory = parseInt(products.find(p => p['Item Code'] === product.code)['Inventory']);
-                    const inStockStatus = product.quantity <= inventory
-                        ? '<span style="color: green;">&#x25CF;</span><span style="margin-left: 5px;">In-stock</span>'
-                        : '<span style="color: red;">&#x25CF;</span><span style="margin-left: 5px;">0 or low stock</span>';
+                    let inStockStatus;
+                    if (product.quantity >= 10) {
+                        inStockStatus = '<span style="color: red;">&#x25CF;</span><span style="margin-left: 5px;">Bulk order - Please verify with J&K</span>';
+                    } else if (inventory - product.quantity <= 7) {
+                        inStockStatus = '<span style="color: red;">&#x25CF;</span><span style="margin-left: 5px;">Low stock - Please verify with J&K</span>';
+                    } else if (product.quantity <= inventory) {
+                        inStockStatus = '<span style="color: green;">&#x25CF;</span><span style="margin-left: 5px;">In-stock</span>';
+                    } else {
+                        inStockStatus = '<span style="color: red;">&#x25CF;</span><span style="margin-left: 5px;">Low stock - Please verify with J&K</span>';
+                    }
                     $(`#selectedProductsTable tbody tr[data-item-code="${product.code}"]`).find('.in-stock-status').html(inStockStatus);
-                });
-            });
-
-            function clearInStockStatus() {
-                $('#selectedProductsTable tbody tr').each(function() {
-                    $(this).find('.in-stock-status').text('');
                 });
             }
 
             // Tooltip logic
-            $(document).on('mouseenter', '.info-icon', function() {
+            $(document).on('mouseenter', '.info-icon', function () {
                 const infoText = $(this).data('info');
                 const tooltip = $(`<div class="info-tooltip">${infoText}</div>`);
                 $('body').append(tooltip);
@@ -662,10 +736,15 @@
                 }).fadeIn(200);
             });
 
-            $(document).on('mouseleave', '.info-icon', function() {
+            $(document).on('mouseleave', '.info-icon', function () {
                 $('.info-tooltip').remove();
+            });
+
+            $(document).on('click', '.add-quantity, .deduct-quantity, .add-modification, .deduct-modification, .add-assembly, .deduct-assembly, .delete-btn', function () {
+                checkStock();
             });
         });
     </script>
 </body>
+
 </html>
